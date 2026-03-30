@@ -107,23 +107,34 @@ fn view(app: &PopupApp) -> Element<'_, Message> {
     .style(|_theme: &Theme| soft_pill_style());
 
     let primary = primary_button("Done", Message::Done).width(Length::FillPortion(3));
-    let snooze =
-        secondary_button(&app.snooze_label, Message::Snooze).width(Length::FillPortion(2));
+    let snooze = secondary_button(&app.snooze_label, Message::Snooze).width(Length::FillPortion(2));
     let skip = plain_action_button("Skip", Message::Skip);
     let pause = plain_action_button("Pause today", Message::PauseToday);
 
     let main_actions = row![primary, snooze].spacing(12);
-    let quiet_actions = row![skip, text("•").size(14).color(Color::from_rgb8(190, 175, 160)), pause]
-        .spacing(10)
-        .align_y(Vertical::Center);
+    let quiet_actions = row![
+        skip,
+        text("•").size(14).color(Color::from_rgb8(190, 175, 160)),
+        pause
+    ]
+    .spacing(10)
+    .align_y(Vertical::Center);
 
     let footer = text("You can snooze if now is a bad moment.")
         .size(14)
         .color(Color::from_rgb8(155, 138, 124));
 
-    let content = column![brand, title, body, hint, main_actions, quiet_actions, footer]
-        .spacing(18)
-        .width(Length::Fill);
+    let content = column![
+        brand,
+        title,
+        body,
+        hint,
+        main_actions,
+        quiet_actions,
+        footer
+    ]
+    .spacing(18)
+    .width(Length::Fill);
 
     container(content)
         .width(Length::Fill)
@@ -210,23 +221,19 @@ fn secondary_button<'a>(label: &'a str, message: Message) -> iced::widget::Butto
 }
 
 fn plain_action_button<'a>(label: &'a str, message: Message) -> iced::widget::Button<'a, Message> {
-    button(
-        text(label)
-            .size(15)
-            .color(Color::from_rgb8(126, 111, 100)),
-    )
-    .padding([4, 2])
-    .style(|_theme: &Theme, _status| button::Style {
-        background: None,
-        text_color: Color::from_rgb8(126, 111, 100),
-        border: Border {
-            radius: 0.0.into(),
-            width: 0.0,
-            color: Color::TRANSPARENT,
-        },
-        shadow: iced::Shadow::default(),
-    })
-    .on_press(message)
+    button(text(label).size(15).color(Color::from_rgb8(126, 111, 100)))
+        .padding([4, 2])
+        .style(|_theme: &Theme, _status| button::Style {
+            background: None,
+            text_color: Color::from_rgb8(126, 111, 100),
+            border: Border {
+                radius: 0.0.into(),
+                width: 0.0,
+                color: Color::TRANSPARENT,
+            },
+            shadow: iced::Shadow::default(),
+        })
+        .on_press(message)
 }
 
 fn build_window_icon() -> Result<window::Icon> {

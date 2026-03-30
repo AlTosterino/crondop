@@ -6,8 +6,8 @@ use anyhow::{Context, Result};
 use chrono::{DateTime, Local};
 use crondrop_core::{load_config, next_reminder_after_with_anchor};
 use crondrop_daemon::{
-    load_state, pause_today as daemon_pause_today, resume as daemon_resume,
-    start as daemon_start, stop as daemon_stop,
+    load_state, pause_today as daemon_pause_today, resume as daemon_resume, start as daemon_start,
+    stop as daemon_stop,
 };
 use tray_icon::menu::{Menu, MenuEvent, MenuId, MenuItem, PredefinedMenuItem};
 use tray_icon::{Icon, TrayIcon, TrayIconBuilder, TrayIconEvent};
@@ -159,7 +159,9 @@ impl TrayApplication {
             .with_menu_on_left_click(true);
 
         if std::env::consts::OS == "macos" {
-            builder = builder.with_icon_as_template(true).with_menu_on_left_click(true);
+            builder = builder
+                .with_icon_as_template(true)
+                .with_menu_on_left_click(true);
         }
 
         let tray_icon = builder.build().context("failed to build tray icon")?;
@@ -217,7 +219,8 @@ impl TrayApplication {
 
         if let Err(error) = result {
             if let Some(menu) = self.menu.as_ref() {
-                menu.status_item.set_text(format!("Status: error ({error})"));
+                menu.status_item
+                    .set_text(format!("Status: error ({error})"));
             }
         }
     }
@@ -248,7 +251,8 @@ impl ApplicationHandler<UserEvent> for TrayApplication {
 
         if let Err(error) = self.refresh() {
             if let Some(menu) = self.menu.as_ref() {
-                menu.status_item.set_text(format!("Status: error ({error})"));
+                menu.status_item
+                    .set_text(format!("Status: error ({error})"));
             }
         }
     }
@@ -257,7 +261,8 @@ impl ApplicationHandler<UserEvent> for TrayApplication {
         if self.last_refresh.elapsed() >= Duration::from_secs(1) {
             if let Err(error) = self.refresh() {
                 if let Some(menu) = self.menu.as_ref() {
-                    menu.status_item.set_text(format!("Status: error ({error})"));
+                    menu.status_item
+                        .set_text(format!("Status: error ({error})"));
                 }
             }
         }
@@ -451,8 +456,8 @@ fn load_tray_snapshot() -> Result<TraySnapshot> {
                 state.snoozed_until_dt(),
                 state.cycle_started_dt(),
             )
-                .ok()
-                .map(|next| next.at)
+            .ok()
+            .map(|next| next.at)
         } else {
             None
         }
@@ -465,8 +470,8 @@ fn load_tray_snapshot() -> Result<TraySnapshot> {
             state.snoozed_until_dt(),
             state.cycle_started_dt(),
         )
-            .ok()
-            .map(|next| next.at);
+        .ok()
+        .map(|next| next.at);
     }
 
     let fill_fraction = match next_due {
@@ -482,7 +487,11 @@ fn load_tray_snapshot() -> Result<TraySnapshot> {
     })
 }
 
-fn reminder_fill_fraction(state: &crondrop_daemon::DaemonState, now: DateTime<Local>, next_due: DateTime<Local>) -> f32 {
+fn reminder_fill_fraction(
+    state: &crondrop_daemon::DaemonState,
+    now: DateTime<Local>,
+    next_due: DateTime<Local>,
+) -> f32 {
     if next_due <= now {
         return 1.0;
     }

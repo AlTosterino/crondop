@@ -61,7 +61,10 @@ pub fn next_reminder_after_with_anchor(
     }
 }
 
-pub fn previous_reminder_before(config: &AppConfig, before: DateTime<Local>) -> Result<NextReminder> {
+pub fn previous_reminder_before(
+    config: &AppConfig,
+    before: DateTime<Local>,
+) -> Result<NextReminder> {
     match config.schedule.mode {
         ScheduleMode::Interval => previous_interval_reminder(config, before),
         ScheduleMode::FixedTimes => previous_fixed_time_reminder(config, before),
@@ -101,14 +104,20 @@ fn next_interval_reminder(
         for _ in 0..14 {
             let day = candidate.date_naive();
             if !is_allowed_day(day, config.schedule.weekdays_only) {
-                candidate = next_allowed_day_start(config, day.succ_opt().context("failed to advance day")?)?;
+                candidate = next_allowed_day_start(
+                    config,
+                    day.succ_opt().context("failed to advance day")?,
+                )?;
                 continue;
             }
 
             let day_start = combine_local(day, start)?;
             let day_end = combine_local(day, end)?;
             if day_end <= day_start {
-                candidate = next_allowed_day_start(config, day.succ_opt().context("failed to advance day")?)?;
+                candidate = next_allowed_day_start(
+                    config,
+                    day.succ_opt().context("failed to advance day")?,
+                )?;
                 continue;
             }
 
@@ -123,7 +132,8 @@ fn next_interval_reminder(
                 });
             }
 
-            candidate = next_allowed_day_start(config, day.succ_opt().context("failed to advance day")?)?;
+            candidate =
+                next_allowed_day_start(config, day.succ_opt().context("failed to advance day")?)?;
         }
 
         anyhow::bail!("failed to find anchored interval reminder in search window");
@@ -243,7 +253,10 @@ fn previous_interval_reminder(config: &AppConfig, before: DateTime<Local>) -> Re
     anyhow::bail!("failed to find previous interval reminder in search window")
 }
 
-fn previous_fixed_time_reminder(config: &AppConfig, before: DateTime<Local>) -> Result<NextReminder> {
+fn previous_fixed_time_reminder(
+    config: &AppConfig,
+    before: DateTime<Local>,
+) -> Result<NextReminder> {
     let fixed_times = if config.schedule.fixed_times.is_empty() {
         vec![config.schedule.active_from.clone()]
     } else {

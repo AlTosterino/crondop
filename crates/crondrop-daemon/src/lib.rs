@@ -195,7 +195,10 @@ pub fn reset_tray_pid() -> Result<DaemonState> {
     let mut state = load_state()?;
     if state.tray_pid.is_some() {
         state.tray_pid = None;
-        state.last_action = Some(format!("stale tray cleared at {}", Local::now().to_rfc3339()));
+        state.last_action = Some(format!(
+            "stale tray cleared at {}",
+            Local::now().to_rfc3339()
+        ));
         save_state(&state)?;
     }
     Ok(state)
@@ -207,7 +210,8 @@ pub fn daemon_loop(current_exe: &Path) -> Result<()> {
     let mut state = load_state()?;
     state.running = true;
     state.daemon_pid = Some(std::process::id());
-    state.cycle_started_at
+    state
+        .cycle_started_at
         .get_or_insert_with(|| Local::now().to_rfc3339());
     state.last_action = Some(format!("daemon started at {}", Local::now().to_rfc3339()));
     save_state(&state)?;

@@ -1,0 +1,142 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run fmt check
+        run: cargo fmt --all -- --check
+
+      - name: Run tests
+        run: cargo test --workspace
+
+  build:
+    name: Build Release (${{ matrix.label }})
+    runs-on: ${{ matrix.os }}
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-x86_64
+            archive_name: crondrop-linux-x86_64
+            binary_name: crondrop
+            package_script: ./scripts/package-release.sh
+          - os: macos-latest
+            label: macos-aarch64
+            archive_name: crondrop-macos-aarch64
+            binary_name: crondrop
+            package_script: ./scripts/package-release.sh
+          - os: windows-latest
+            label: windows-x86_64
+            archive_name: crondrop-windows-x86_64
+            binary_name: crondrop.exe
+            package_script: ./scripts/package-release.ps1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build release binary
+        run: cargo build --release -p crondrop
+
+      - name: Package release archive (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x "${{ matrix.package_script }}"
+          "${{ matrix.package_script }}" "${{ matrix.archive_name }}" "target/release/${{ matrix.binary_name }}"
+
+      - name: Package release archive (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & "${{ matrix.package_script }}" "${{ matrix.archive_name }}" "target/release/${{ matrix.binary_name }}"
+
+      - name: Upload packaged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive_name }}
+          path: dist/${{ matrix.archive_name }}.*
+          if-no-files-found: error
+
+  release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+
+      - name: Publish GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          notes_file="$(mktemp)"
+          cat > "$notes_file" <<EOF
+          Release ${tag} for crondrop
+
+          Included artifacts:
+          - Linux x86_64 archive
+          - macOS aarch64 archive
+          - Windows x86_64 archive
+          EOF
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" release-artifacts/**/* --clobber
+          else
+            gh release create "$tag" release-artifacts/**/* --title "$tag" --notes-file "$notes_file"
+          fi
+

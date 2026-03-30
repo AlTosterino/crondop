@@ -1,0 +1,12 @@
+[package]
+name = "crondrop-ui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+crondrop-core = { path = "../crondrop-core" }
+crondrop-daemon = { path = "../crondrop-daemon" }
+iced.workspace = true
+rodio.workspace = true

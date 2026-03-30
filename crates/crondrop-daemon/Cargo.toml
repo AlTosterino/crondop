@@ -1,0 +1,13 @@
+[package]
+name = "crondrop-daemon"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+crondrop-core = { path = "../crondrop-core" }
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true

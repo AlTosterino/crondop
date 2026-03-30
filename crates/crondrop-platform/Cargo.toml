@@ -1,0 +1,20 @@
+[package]
+name = "crondrop-platform"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+crondrop-core = { path = "../crondrop-core" }
+crondrop-daemon = { path = "../crondrop-daemon" }
+dirs.workspace = true
+libc.workspace = true
+tray-icon.workspace = true
+winit.workspace = true
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-app-kit = { version = "0.2.2", features = ["NSApplication", "NSRunningApplication"] }
+objc2-core-foundation = "0.3"
+objc2-foundation = "0.2.2"

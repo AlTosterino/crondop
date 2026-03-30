@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=crondrop
+Exec=crondrop start
+Terminal=false
+X-GNOME-Autostart-enabled=true
+

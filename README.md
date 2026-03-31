@@ -47,6 +47,26 @@ crondrop --help
 
 The formula installs from the published GitHub release archives for the current version.
 
+If you want the cleaner tap flow:
+
+```bash
+brew tap AlTosterino/crondrop
+brew install crondrop
+```
+
+create a separate repository named `AlTosterino/homebrew-crondrop`.
+
+This repository already contains:
+
+- a tap-ready formula generator in [`scripts/render-homebrew-formula.sh`](./scripts/render-homebrew-formula.sh)
+- a tap repo updater in [`scripts/update-homebrew-tap.sh`](./scripts/update-homebrew-tap.sh)
+- a release workflow that can update the tap automatically after a tagged release
+
+To enable automatic tap updates from GitHub Actions, set these repository secrets in `AlTosterino/crondop`:
+
+- `HOMEBREW_TAP_REPOSITORY` with value `AlTosterino/homebrew-crondrop`
+- `HOMEBREW_TAP_GITHUB_TOKEN` with a token that can push to that tap repo
+
 ## Prerequisites
 
 - Rust and Cargo

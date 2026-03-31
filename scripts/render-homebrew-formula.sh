@@ -1,18 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 4 ]]; then
+  echo "usage: $0 <owner/repo> <tag> <linux_sha256> <macos_sha256>" >&2
+  exit 1
+fi
+
+repo="$1"
+tag="$2"
+linux_sha="$3"
+macos_sha="$4"
+version="${tag#v}"
+
+cat <<EOF
 class Crondrop < Formula
   desc "Desktop eye-drop reminder app with a CLI-first workflow"
-  homepage "https://github.com/AlTosterino/crondop"
+  homepage "https://github.com/${repo}"
   license "MIT"
-  version "0.1.0"
+  version "${version}"
 
   on_macos do
     depends_on arch: :arm64
-    url "https://github.com/AlTosterino/crondop/releases/download/v0.1.0/crondrop-macos-aarch64.tar.gz"
-    sha256 "ba1aee4b29f70505c7547bc0cd0750974d9df420ae85243b67a227f2cb65f609"
+    url "https://github.com/${repo}/releases/download/${tag}/crondrop-macos-aarch64.tar.gz"
+    sha256 "${macos_sha}"
   end
 
   on_linux do
-    url "https://github.com/AlTosterino/crondop/releases/download/v0.1.0/crondrop-linux-x86_64.tar.gz"
-    sha256 "da782241557f3c76bae469043f76e680df6c3ac781b82f381462d11322861444"
+    url "https://github.com/${repo}/releases/download/${tag}/crondrop-linux-x86_64.tar.gz"
+    sha256 "${linux_sha}"
   end
 
   def install
@@ -35,3 +50,4 @@ class Crondrop < Formula
     assert_match "A friendly CLI-first eye drop reminder", shell_output("#{bin}/crondrop --help")
   end
 end
+EOF

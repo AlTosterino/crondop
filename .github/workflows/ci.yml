@@ -163,3 +163,50 @@ jobs:
           else
             gh release create "$tag" release-artifacts/**/* --title "$tag" --notes-file "$notes_file"
           fi
+
+      - name: Update Homebrew tap
+        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN != '' && secrets.HOMEBREW_TAP_REPOSITORY != '' }}
+        env:
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          HOMEBREW_TAP_REPOSITORY: ${{ secrets.HOMEBREW_TAP_REPOSITORY }}
+        run: |
+          set -euo pipefail
+
+          tag="${GITHUB_REF_NAME}"
+          tap_dir="$(mktemp -d)"
+          linux_archive="$(find release-artifacts -name 'crondrop-linux-x86_64.tar.gz' -print -quit)"
+          macos_archive="$(find release-artifacts -name 'crondrop-macos-aarch64.tar.gz' -print -quit)"
+
+          if [[ -z "${linux_archive}" || -z "${macos_archive}" ]]; then
+            echo "release artifacts not found for Homebrew tap update" >&2
+            exit 1
+          fi
+
+          linux_sha="$(sha256sum "${linux_archive}" | awk '{print $1}')"
+          macos_sha="$(sha256sum "${macos_archive}" | awk '{print $1}')"
+
+          git clone "https://x-access-token:${HOMEBREW_TAP_GITHUB_TOKEN}@github.com/${HOMEBREW_TAP_REPOSITORY}.git" "${tap_dir}"
+
+          ./scripts/update-homebrew-tap.sh \
+            "${tap_dir}" \
+            "${GITHUB_REPOSITORY}" \
+            "${tag}" \
+            "${linux_sha}" \
+            "${macos_sha}"
+
+          cd "${tap_dir}"
+          if git diff --quiet; then
+            echo "homebrew tap already up to date"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/crondrop.rb README.md
+          git commit -m "Update crondrop ${tag}"
+          git push origin HEAD
+
+      - name: Homebrew tap not configured
+        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN == '' || secrets.HOMEBREW_TAP_REPOSITORY == '' }}
+        run: |
+          echo "Skipping Homebrew tap update. Set HOMEBREW_TAP_GITHUB_TOKEN and HOMEBREW_TAP_REPOSITORY to enable automation."

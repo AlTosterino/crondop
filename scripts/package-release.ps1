@@ -8,6 +8,7 @@ $ErrorActionPreference = "Stop"
 $RootDir = Split-Path -Parent $PSScriptRoot
 $DistDir = Join-Path $RootDir "dist"
 $StageDir = Join-Path $DistDir $ArchiveName
+$DocSource = $null
 
 if (Test-Path $StageDir) {
     Remove-Item -Recurse -Force $StageDir
@@ -16,8 +17,17 @@ if (Test-Path $StageDir) {
 New-Item -ItemType Directory -Path $StageDir | Out-Null
 
 Copy-Item (Join-Path $RootDir $BinaryPath) (Join-Path $StageDir "crondrop.exe")
-Copy-Item (Join-Path $RootDir "SPEC.md") (Join-Path $StageDir "SPEC.md")
 Copy-Item (Join-Path $RootDir "packaging/README.md") (Join-Path $StageDir "README-packaging.md")
+
+if (Test-Path (Join-Path $RootDir "SPEC.md")) {
+    $DocSource = Join-Path $RootDir "SPEC.md"
+} elseif (Test-Path (Join-Path $RootDir "SUMMARY.MD")) {
+    $DocSource = Join-Path $RootDir "SUMMARY.MD"
+}
+
+if ($null -ne $DocSource) {
+    Copy-Item $DocSource (Join-Path $StageDir (Split-Path $DocSource -Leaf))
+}
 
 $WindowsStartup = Join-Path $RootDir "packaging/windows/crondrop.cmd"
 if (Test-Path $WindowsStartup) {
@@ -30,4 +40,3 @@ if (Test-Path $ZipPath) {
 }
 
 Compress-Archive -Path $StageDir -DestinationPath $ZipPath
-

@@ -193,7 +193,7 @@ jobs:
 
           git clone "https://x-access-token:${HOMEBREW_TAP_GITHUB_TOKEN}@github.com/${HOMEBREW_TAP_REPOSITORY}.git" "${tap_dir}"
 
-          ./scripts/update-homebrew-tap.sh \
+          bash ./scripts/update-homebrew-tap.sh \
             "${tap_dir}" \
             "${GITHUB_REPOSITORY}" \
             "${tag}" \

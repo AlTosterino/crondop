@@ -31,6 +31,22 @@ Typical flow:
 
 ## Installation
 
+## Homebrew
+
+The easiest install path on macOS or Linux is Homebrew:
+
+```bash
+brew install --formula https://raw.githubusercontent.com/AlTosterino/crondop/main/Formula/crondrop.rb
+```
+
+Then verify:
+
+```bash
+crondrop --help
+```
+
+The formula installs from the published GitHub release archives for the current version.
+
 ## Prerequisites
 
 - Rust and Cargo

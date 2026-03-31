@@ -1,0 +1,74 @@
+name: sync-homebrew-tap
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to sync to the Homebrew tap, for example v0.1.3. Leave empty to use the latest published release."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  sync:
+    name: Sync Homebrew tap
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update Homebrew tap from published release
+        env:
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          HOMEBREW_TAP_REPOSITORY: ${{ secrets.HOMEBREW_TAP_REPOSITORY }}
+          HOMEBREW_TAP_GIT_NAME: AlTosterino
+          HOMEBREW_TAP_GIT_EMAIL: altosterino@gmail.com
+          REQUESTED_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${HOMEBREW_TAP_GITHUB_TOKEN}" || -z "${HOMEBREW_TAP_REPOSITORY}" ]]; then
+            echo "Missing HOMEBREW_TAP_GITHUB_TOKEN or HOMEBREW_TAP_REPOSITORY." >&2
+            exit 1
+          fi
+
+          if [[ -n "${REQUESTED_TAG}" ]]; then
+            tag="${REQUESTED_TAG}"
+          else
+            tag="$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq '.tag_name')"
+          fi
+
+          linux_sha="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${tag}" --jq '.assets[] | select(.name == "crondrop-linux-x86_64.tar.gz") | .digest' | sed 's/^sha256://')"
+          macos_sha="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${tag}" --jq '.assets[] | select(.name == "crondrop-macos-aarch64.tar.gz") | .digest' | sed 's/^sha256://')"
+
+          if [[ -z "${linux_sha}" || -z "${macos_sha}" ]]; then
+            echo "Could not find release asset digests for ${tag}." >&2
+            exit 1
+          fi
+
+          tap_dir="$(mktemp -d)"
+          git clone "https://x-access-token:${HOMEBREW_TAP_GITHUB_TOKEN}@github.com/${HOMEBREW_TAP_REPOSITORY}.git" "${tap_dir}"
+
+          bash ./scripts/update-homebrew-tap.sh \
+            "${tap_dir}" \
+            "${GITHUB_REPOSITORY}" \
+            "${tag}" \
+            "${linux_sha}" \
+            "${macos_sha}"
+
+          cd "${tap_dir}"
+          if git diff --quiet; then
+            echo "Homebrew tap already up to date for ${tag}."
+            exit 0
+          fi
+
+          git config user.name "${HOMEBREW_TAP_GIT_NAME}"
+          git config user.email "${HOMEBREW_TAP_GIT_EMAIL}"
+          git add Formula/crondrop.rb README.md
+          git commit -m "Update crondrop ${tag}"
+          git push origin HEAD

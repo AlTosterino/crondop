@@ -15,7 +15,7 @@ macos_sha="$5"
 formula_dir="${tap_repo_dir}/Formula"
 mkdir -p "${formula_dir}"
 
-"$(dirname "${BASH_SOURCE[0]}")/render-homebrew-formula.sh" \
+bash "$(dirname "${BASH_SOURCE[0]}")/render-homebrew-formula.sh" \
   "${app_repo}" \
   "${tag}" \
   "${linux_sha}" \

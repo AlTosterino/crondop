@@ -165,7 +165,6 @@ jobs:
           fi
 
       - name: Update Homebrew tap
-        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN != '' && secrets.HOMEBREW_TAP_REPOSITORY != '' }}
         env:
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
           HOMEBREW_TAP_REPOSITORY: ${{ secrets.HOMEBREW_TAP_REPOSITORY }}
@@ -173,6 +172,11 @@ jobs:
           HOMEBREW_TAP_GIT_EMAIL: altosterino@gmail.com
         run: |
           set -euo pipefail
+
+          if [[ -z "${HOMEBREW_TAP_GITHUB_TOKEN}" || -z "${HOMEBREW_TAP_REPOSITORY}" ]]; then
+            echo "Skipping Homebrew tap update. Set HOMEBREW_TAP_GITHUB_TOKEN and HOMEBREW_TAP_REPOSITORY to enable automation."
+            exit 0
+          fi
 
           tag="${GITHUB_REF_NAME}"
           tap_dir="$(mktemp -d)"
@@ -207,8 +211,3 @@ jobs:
           git add Formula/crondrop.rb README.md
           git commit -m "Update crondrop ${tag}"
           git push origin HEAD
-
-      - name: Homebrew tap not configured
-        if: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN == '' || secrets.HOMEBREW_TAP_REPOSITORY == '' }}
-        run: |
-          echo "Skipping Homebrew tap update. Set HOMEBREW_TAP_GITHUB_TOKEN and HOMEBREW_TAP_REPOSITORY to enable automation."

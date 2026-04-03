@@ -34,6 +34,8 @@ enum Commands {
     Run,
     /// Stop the background daemon.
     Stop,
+    /// Quit Cron Drop completely, including the tray process.
+    Quit,
     /// Restart the background daemon.
     Restart,
     /// Show the current Cron Drop status.
@@ -170,6 +172,7 @@ fn run(cli: Cli) -> Result<()> {
         Commands::Start => start_daemon(),
         Commands::Run => start_daemon(),
         Commands::Stop => stop_daemon(),
+        Commands::Quit => quit(),
         Commands::Restart => restart_daemon(),
         Commands::Status => status(),
         Commands::Pause(pause) => pause_command(pause),
@@ -284,6 +287,35 @@ fn stop_daemon() -> Result<()> {
     let state = crondrop_daemon::stop()?;
     println!("Cron Drop stopped.");
     println!("Daemon: {}", yes_no(state.running));
+    Ok(())
+}
+
+fn quit() -> Result<()> {
+    let mut state = crondrop_daemon::load_state()?;
+
+    if let Some(pid) = state.tray_pid.filter(|_| tray_pid_is_live(state.tray_pid)) {
+        crondrop_platform::terminate_process(pid)
+            .with_context(|| format!("failed to stop tray process {pid}"))?;
+
+        for _ in 0..20 {
+            if !crondrop_platform::process_is_running(pid) {
+                break;
+            }
+            thread::sleep(Duration::from_millis(100));
+        }
+    }
+
+    if state.tray_pid.is_some() {
+        state = crondrop_daemon::reset_tray_pid()?;
+    }
+
+    if state.running {
+        state = crondrop_daemon::stop()?;
+    }
+
+    println!("Cron Drop quit.");
+    println!("Daemon: {}", yes_no(state.running));
+    println!("Tray: {}", yes_no(tray_pid_is_live(state.tray_pid)));
     Ok(())
 }
 

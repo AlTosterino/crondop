@@ -23,6 +23,10 @@ pub fn process_is_running(pid: u32) -> bool {
     process_is_running_impl(pid)
 }
 
+pub fn terminate_process(pid: u32) -> Result<()> {
+    terminate_process_impl(pid)
+}
+
 pub fn autostart_target(app_name: &str) -> Result<PathBuf> {
     match std::env::consts::OS {
         "macos" => {
@@ -555,9 +559,33 @@ fn process_is_running_impl(pid: u32) -> bool {
         .is_some_and(|code| code == libc::EPERM)
 }
 
+#[cfg(unix)]
+fn terminate_process_impl(pid: u32) -> Result<()> {
+    if pid == 0 {
+        anyhow::bail!("invalid pid 0");
+    }
+
+    let result = unsafe { libc::kill(pid as i32, libc::SIGTERM) };
+    if result == 0 {
+        return Ok(());
+    }
+
+    let error = std::io::Error::last_os_error();
+    if error.raw_os_error().is_some_and(|code| code == libc::ESRCH) {
+        return Ok(());
+    }
+
+    Err(error).with_context(|| format!("failed to send SIGTERM to process {pid}"))
+}
+
 #[cfg(windows)]
 fn process_is_running_impl(_pid: u32) -> bool {
     true
+}
+
+#[cfg(windows)]
+fn terminate_process_impl(_pid: u32) -> Result<()> {
+    anyhow::bail!("process termination is not implemented on Windows")
 }
 
 #[cfg(target_os = "macos")]

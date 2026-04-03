@@ -10,3 +10,7 @@ crondrop-core = { path = "../crondrop-core" }
 crondrop-daemon = { path = "../crondrop-daemon" }
 iced.workspace = true
 rodio.workspace = true
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-app-kit = { version = "0.2.2", features = ["NSApplication", "NSRunningApplication"] }
+objc2-foundation = "0.2.2"

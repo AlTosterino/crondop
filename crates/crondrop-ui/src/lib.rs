@@ -8,6 +8,8 @@ use std::io::Cursor;
 use std::time::Duration;
 
 pub fn show_popup(config: AppConfig, reminder_id: String) -> Result<()> {
+    configure_macos_popup_app();
+
     if config.behavior.sound {
         play_drop_sound_async();
     }
@@ -30,6 +32,26 @@ pub fn show_popup(config: AppConfig, reminder_id: String) -> Result<()> {
 
     Ok(())
 }
+
+#[cfg(target_os = "macos")]
+fn configure_macos_popup_app() {
+    use objc2_app_kit::{NSApplication, NSApplicationActivationPolicy, NSRunningApplication};
+    use objc2_foundation::MainThreadMarker;
+
+    if let Some(marker) = MainThreadMarker::new() {
+        let app = NSApplication::sharedApplication(marker);
+        let _ = app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
+        app.hide(None);
+
+        unsafe {
+            let current_app = NSRunningApplication::currentApplication();
+            let _ = current_app.hide();
+        }
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn configure_macos_popup_app() {}
 
 #[derive(Debug, Clone)]
 enum Message {

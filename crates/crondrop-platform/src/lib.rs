@@ -227,7 +227,9 @@ impl TrayApplication {
 }
 
 impl ApplicationHandler<UserEvent> for TrayApplication {
-    fn resumed(&mut self, _event_loop: &ActiveEventLoop) {}
+    fn resumed(&mut self, _event_loop: &ActiveEventLoop) {
+        configure_macos_tray_app();
+    }
 
     fn new_events(&mut self, event_loop: &ActiveEventLoop, cause: StartCause) {
         if cause == StartCause::Init {
@@ -569,12 +571,18 @@ fn wake_macos_runloop() {
 
 #[cfg(target_os = "macos")]
 fn configure_macos_tray_app() {
-    use objc2_app_kit::{NSApplication, NSApplicationActivationPolicy};
+    use objc2_app_kit::{NSApplication, NSApplicationActivationPolicy, NSRunningApplication};
     use objc2_foundation::MainThreadMarker;
 
     if let Some(marker) = MainThreadMarker::new() {
         let app = NSApplication::sharedApplication(marker);
         let _ = app.setActivationPolicy(NSApplicationActivationPolicy::Accessory);
+        app.hide(None);
+
+        unsafe {
+            let current_app = NSRunningApplication::currentApplication();
+            let _ = current_app.hide();
+        }
     }
 }
 

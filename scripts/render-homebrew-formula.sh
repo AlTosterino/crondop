@@ -31,18 +31,21 @@ class Crondrop < Formula
   end
 
   def install
-    bin.install Dir["*/crondrop"].fetch(0)
+    binary = Dir["crondrop", "*/crondrop"].find { |path| File.file?(path) }
+    odie "crondrop binary not found in release archive" unless binary
 
-    readme = Dir["*/README-packaging.md"].first
+    bin.install binary => "crondrop"
+
+    readme = Dir["README-packaging.md", "*/README-packaging.md"].find { |path| File.file?(path) }
     doc.install readme if readme
 
-    summary = Dir["*/SUMMARY.MD"].first
+    summary = Dir["SPEC.md", "SUMMARY.MD", "*/SPEC.md", "*/SUMMARY.MD"].find { |path| File.file?(path) }
     doc.install summary if summary
 
-    plist = Dir["*/com.crondrop.plist"].first
+    plist = Dir["com.crondrop.plist", "*/com.crondrop.plist"].find { |path| File.file?(path) }
     prefix.install plist if OS.mac? && plist
 
-    desktop = Dir["*/crondrop.desktop"].first
+    desktop = Dir["crondrop.desktop", "*/crondrop.desktop"].find { |path| File.file?(path) }
     prefix.install desktop if OS.linux? && desktop
   end
 

@@ -2,32 +2,35 @@ class Crondrop < Formula
   desc "Desktop eye-drop reminder app with a CLI-first workflow"
   homepage "https://github.com/AlTosterino/crondop"
   license "MIT"
-  version "0.1.0"
+  version "0.1.5"
 
   on_macos do
     depends_on arch: :arm64
-    url "https://github.com/AlTosterino/crondop/releases/download/v0.1.0/crondrop-macos-aarch64.tar.gz"
-    sha256 "ba1aee4b29f70505c7547bc0cd0750974d9df420ae85243b67a227f2cb65f609"
+    url "https://github.com/AlTosterino/crondop/releases/download/v0.1.5/crondrop-macos-aarch64.tar.gz"
+    sha256 "9b9100323ad44025f81e928b611d66234a687f1503c46fa5e8cb38596ad16c6e"
   end
 
   on_linux do
-    url "https://github.com/AlTosterino/crondop/releases/download/v0.1.0/crondrop-linux-x86_64.tar.gz"
-    sha256 "da782241557f3c76bae469043f76e680df6c3ac781b82f381462d11322861444"
+    url "https://github.com/AlTosterino/crondop/releases/download/v0.1.5/crondrop-linux-x86_64.tar.gz"
+    sha256 "d859ae943858d3eef5073b9365ed9f014619ec8cb79f82a135dddb1623277a42"
   end
 
   def install
-    bin.install Dir["*/crondrop"].fetch(0)
+    binary = Dir["crondrop", "*/crondrop"].find { |path| File.file?(path) }
+    odie "crondrop binary not found in release archive" unless binary
 
-    readme = Dir["*/README-packaging.md"].first
+    bin.install binary => "crondrop"
+
+    readme = Dir["README-packaging.md", "*/README-packaging.md"].find { |path| File.file?(path) }
     doc.install readme if readme
 
-    summary = Dir["*/SUMMARY.MD"].first
+    summary = Dir["SPEC.md", "SUMMARY.MD", "*/SPEC.md", "*/SUMMARY.MD"].find { |path| File.file?(path) }
     doc.install summary if summary
 
-    plist = Dir["*/com.crondrop.plist"].first
+    plist = Dir["com.crondrop.plist", "*/com.crondrop.plist"].find { |path| File.file?(path) }
     prefix.install plist if OS.mac? && plist
 
-    desktop = Dir["*/crondrop.desktop"].first
+    desktop = Dir["crondrop.desktop", "*/crondrop.desktop"].find { |path| File.file?(path) }
     prefix.install desktop if OS.linux? && desktop
   end
 

@@ -1,8 +1,14 @@
 # Cron Drop
 
-Cron Drop is a desktop eye-drop reminder app with a CLI-first workflow.
+<p align="center">
+  <img src="assets/images/crondrop.png" alt="Cron Drop app preview" width="720">
+</p>
 
-It lets you define a reminder schedule from the terminal, keeps a background daemon running quietly, and shows a native popup when it is time to use your eye drops. A tray process provides quick status and control without reopening the terminal.
+<p align="center"><strong>CLI-first eye-drop reminders with a native popup and tray.</strong></p>
+
+Cron Drop is a desktop reminder app for eye drops with a CLI-first workflow.
+
+It lets you define a schedule from the terminal, keeps a background daemon running quietly, and shows a native popup when it is time to use your drops. A tray process provides quick status and control without reopening the terminal.
 
 ## What It Does
 

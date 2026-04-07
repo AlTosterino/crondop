@@ -23,12 +23,6 @@ It is built around a simple idea: reminders should be dependable, visible, and e
 Homebrew is the easiest way to install Cron Drop:
 
 ```bash
-brew install --formula https://raw.githubusercontent.com/AlTosterino/crondrop/main/Formula/crondrop.rb
-```
-
-If you prefer tapping the repository first:
-
-```bash
 brew tap AlTosterino/crondrop
 brew install crondrop
 ```

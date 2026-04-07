@@ -4,124 +4,44 @@
   <img src="assets/images/crondrop.png" alt="Cron Drop app preview" width="720">
 </p>
 
-<p align="center"><strong>CLI-first eye-drop reminders with a native popup and tray.</strong></p>
+<p align="center"><strong>Desktop eye-drop reminders that stay out of your way until you need them.</strong></p>
 
-Cron Drop is a desktop reminder app for eye drops with a CLI-first workflow.
+Cron Drop is a desktop reminder app for people who want reliable eye-drop reminders without keeping a phone app open all day. You set a schedule once, Cron Drop runs quietly in the background, and a native popup appears when it is time to use your drops.
 
-It lets you define a schedule from the terminal, keeps a background daemon running quietly, and shows a native popup when it is time to use your drops. A tray process provides quick status and control without reopening the terminal.
+It is built around a simple idea: reminders should be dependable, visible, and easy to control.
 
-## What It Does
+## Why People Use It
 
-- Shows popup reminders at configured intervals or fixed times
-- Runs in the background after you set a schedule
-- Supports a system tray for quick control
-- Lets you pause reminders for the rest of the day
-- Supports launch-at-login setup
-- Keeps configuration in a local config file you can inspect
+- Native popup reminders instead of easy-to-miss background notifications
+- Repeating schedules or fixed reminder times
+- Tray access for quick status and control
+- Pause-for-today support when your routine changes
+- Launch-at-login support so it stays running
 
-## How It Works
+## Install
 
-Cron Drop has three main parts:
-
-- `crondrop` CLI for setup and control
-- a background daemon that tracks the next reminder
-- a native popup UI for the actual reminder window
-
-Typical flow:
-
-1. Initialize the config once.
-2. Set a schedule.
-3. Cron Drop starts in the background.
-4. A popup appears when the next reminder is due.
-5. Use the tray or CLI to check status, pause, resume, or stop it.
-
-## Installation
-
-## Homebrew
-
-The easiest install path on macOS or Linux is Homebrew:
+Homebrew is the easiest way to install Cron Drop:
 
 ```bash
-brew install --formula https://raw.githubusercontent.com/AlTosterino/crondop/main/Formula/crondrop.rb
+brew install --formula https://raw.githubusercontent.com/AlTosterino/crondrop/main/Formula/crondrop.rb
 ```
 
-Then verify:
-
-```bash
-crondrop --help
-```
-
-The formula installs from the published GitHub release archives for the current version.
-
-If you want the cleaner tap flow:
+If you prefer tapping the repository first:
 
 ```bash
 brew tap AlTosterino/crondrop
 brew install crondrop
 ```
 
-create a separate repository named `AlTosterino/homebrew-crondrop`.
-
-This repository already contains:
-
-- a tap-ready formula generator in [`scripts/render-homebrew-formula.sh`](./scripts/render-homebrew-formula.sh)
-- a tap repo updater in [`scripts/update-homebrew-tap.sh`](./scripts/update-homebrew-tap.sh)
-- a release workflow that can update the tap automatically after a tagged release
-
-To enable automatic tap updates from GitHub Actions, set these repository secrets in `AlTosterino/crondop`:
-
-- `HOMEBREW_TAP_REPOSITORY` with value `AlTosterino/homebrew-crondrop`
-- `HOMEBREW_TAP_GITHUB_TOKEN` with a token that can push to that tap repo
-
-## Prerequisites
-
-- Rust and Cargo
-- A desktop session if you want popup windows and tray support
-
-Check your toolchain:
-
-```bash
-rustc --version
-cargo --version
-```
-
-## Build From Source
-
-Clone the repo and build it:
-
-```bash
-cargo build --release
-```
-
-The release binary will be available at:
-
-```bash
-target/release/crondrop
-```
-
-## Install the CLI
-
-Install from the local source tree:
-
-```bash
-cargo install --path crates/crondrop-cli
-```
-
-Then run:
+Then confirm the CLI is available:
 
 ```bash
 crondrop --help
 ```
 
-If you do not want to install it globally, you can run it directly from the repo with:
-
-```bash
-cargo run -p crondrop -- --help
-```
-
 ## Quick Start
 
-Initialize the app:
+Initialize Cron Drop once:
 
 ```bash
 crondrop init
@@ -141,101 +61,13 @@ crondrop schedule add --at 09:00 --at 13:00 --at 18:00
 
 By default, setting a schedule also starts Cron Drop in the background.
 
-## CLI Usage
+## Everyday Commands
 
-## Core Commands
-
-Initialize config:
-
-```bash
-crondrop init
-```
-
-Start the daemon:
-
-```bash
-crondrop start
-```
-
-`run` is an alias for `start`:
-
-```bash
-crondrop run
-```
-
-Stop the daemon:
-
-```bash
-crondrop stop
-```
-
-Restart the daemon:
-
-```bash
-crondrop restart
-```
-
-Show current status:
+Check status:
 
 ```bash
 crondrop status
 ```
-
-## Schedule Commands
-
-Repeat every hour:
-
-```bash
-crondrop schedule every 1h
-```
-
-Repeat every 30 minutes during a time window:
-
-```bash
-crondrop schedule every 30m --from 08:00 --to 22:00
-```
-
-Use weekdays only:
-
-```bash
-crondrop schedule every 1h --from 08:00 --to 18:00 --weekdays-only
-```
-
-Set fixed reminder times:
-
-```bash
-crondrop schedule add --at 09:00 --at 13:00 --at 18:00
-```
-
-Save the schedule without starting the app:
-
-```bash
-crondrop schedule every 1h --no-start
-```
-
-## Popup And Tray
-
-Open the popup immediately to preview the reminder UI:
-
-```bash
-crondrop preview
-```
-
-The following aliases also work:
-
-```bash
-crondrop popup
-crondrop show-popup
-crondrop test
-```
-
-Start the tray manually:
-
-```bash
-crondrop tray
-```
-
-## Pause And Resume
 
 Pause reminders for the rest of today:
 
@@ -249,76 +81,19 @@ Resume reminders:
 crondrop resume
 ```
 
-## Config And Theme
-
-Show the active config:
+Preview the reminder popup:
 
 ```bash
-crondrop config show
+crondrop preview
 ```
 
-Print the config file path:
+## More Docs
 
-```bash
-crondrop config path
-```
-
-Change the popup theme:
-
-```bash
-crondrop theme cozy
-```
-
-## Autostart
-
-Install launch-at-login:
-
-```bash
-crondrop autostart install
-```
-
-Check autostart status:
-
-```bash
-crondrop autostart status
-```
-
-Remove launch-at-login:
-
-```bash
-crondrop autostart remove
-```
-
-## Development
-
-To avoid touching your real user config during local development, use repo-scoped config and runtime directories:
-
-```bash
-export CRONDROP_CONFIG_DIR="$PWD/.crondrop-dev/config"
-export CRONDROP_RUNTIME_DIR="$PWD/.crondrop-dev/runtime"
-mkdir -p "$CRONDROP_CONFIG_DIR" "$CRONDROP_RUNTIME_DIR"
-```
-
-Then run commands from the repository, for example:
-
-```bash
-cargo run -p crondrop -- init
-cargo run -p crondrop -- schedule every 1h --from 08:00 --to 22:00
-cargo run -p crondrop -- status
-```
-
-Run tests:
-
-```bash
-cargo test --workspace
-```
-
-## Packaging And CI
-
-- Branch pushes and pull requests run formatting and tests through GitHub Actions
-- Tagged releases build Linux, macOS, and Windows artifacts
-- Packaging assets live under [`packaging/`](./packaging)
+- User and CLI guide: [`docs/user-guide.md`](./docs/user-guide.md)
+- Development and local setup: [`docs/development.md`](./docs/development.md)
+- Packaging and release notes: [`packaging/README.md`](./packaging/README.md)
+- Homebrew maintainer notes: [`packaging/homebrew-tap/README.md`](./packaging/homebrew-tap/README.md)
 
 ## Status
 
-Cron Drop is currently source-first. The repository builds a working Rust binary, and the packaging layer is oriented around future platform-native distribution.
+Cron Drop is usable today as a CLI-first desktop reminder tool. The project is still evolving, but the core workflow is already simple: install it, set a schedule, and let it remind you when it matters.
